@@ -1,6 +1,6 @@
 {
-  "short_name": "Truffle Box",
-  "name": "React Truffle Box",
+  "short_name": "Voting project",
+  "name": "Voting project",
   "icons": [
     {
       "src": "favicon.ico",

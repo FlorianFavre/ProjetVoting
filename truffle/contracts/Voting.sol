@@ -7,7 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Voting is Ownable {
 
     uint public winningProposalID;
-    
+    uint internal proposalCount;
+
     struct Voter {
         bool isRegistered;
         bool hasVoted;
@@ -37,6 +38,7 @@ contract Voting is Ownable {
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
     event ProposalRegistered(uint proposalId);
     event Voted (address voter, uint proposalId);
+    event ProposalEnded(string message);
 
     modifier onlyVoters() {
         require(voters[msg.sender].isRegistered, "You're not a voter");
@@ -73,11 +75,16 @@ contract Voting is Ownable {
         require(workflowStatus == WorkflowStatus.ProposalsRegistrationStarted, 'Proposals are not allowed yet');
         require(keccak256(abi.encode(_desc)) != keccak256(abi.encode("")), 'Vous ne pouvez pas ne rien proposer'); // facultatif
         // voir que desc est different des autres
-
-        Proposal memory proposal;
-        proposal.description = _desc;
-        proposalsArray.push(proposal);
-        emit ProposalRegistered(proposalsArray.length-1);
+        if(proposalCount < 100){
+            Proposal memory proposal;
+            proposal.description = _desc;
+            proposalsArray.push(proposal);
+            emit ProposalRegistered(proposalsArray.length-1);
+            proposalCount ++;
+        }else{
+            emit ProposalEnded("Le nombre de proposition est atteint");
+        }
+        
     }
 
     // ::::::::::::: VOTE ::::::::::::: //
