@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Voting from "./contracts/Voting.json";
 import getWeb3 from "./getWeb3.js";
 import "./App.css";
-import {ethers} from 'ethers'
+import {ethers} from 'ethers';
 
 function App() {
 
@@ -17,6 +17,15 @@ function App() {
 	const [defaultAccount, setDefaultAccount] = useState(null);
 	const [userBalance, setUserBalance] = useState(null);
 	const [connButtonText, setConnButtonText] = useState('Connect Wallet');
+  const amt = useRef(null);
+  const whitelistDiv = useRef(null);
+  const startProposalDiv = useRef(null);
+  const endProposalsRegisteringDiv = useRef(null);
+  const addProposalDiv = useRef(null);
+  const startVotingSessionDiv = useRef(null);
+  const setVoteDiv = useRef(null);
+  const endVotingSessionDiv = useRef(null);
+  const tallyVotesDiv = useRef(null);
 
   let options = {
     filter: {
@@ -50,6 +59,7 @@ function App() {
       }
     };
 
+
   },[]);
 
   const connectWalletHandler = () => {
@@ -61,10 +71,11 @@ function App() {
 				accountChangedHandler(result[0]);
 				setConnButtonText('Wallet Connected');
 				getAccountBalance(result[0]);
+		    window.location.reload();
+        
 			})
 			.catch(error => {
-				setErrorMessage(error.message);
-			
+				setErrorMessage(error.message);			
 			});
 
 		} else {
@@ -92,6 +103,7 @@ function App() {
 	const chainChangedHandler = () => {
 		// reload the page to avoid any errors with chain change mid use of application
 		window.location.reload();
+    
 	}
 
   // async function fetchOwner() {
@@ -115,15 +127,24 @@ function App() {
   // }, [addresses]);
 
   async function addWhitelist () {
+    whitelistDiv.current.style.backgroundColor = "grey";
     if (inputValue === "") {
       alert("Please enter a value to write.");
       return;
     }
+    console.log(inputValue);
     await contract.methods.addVoter(inputValue).send({from: addresses[0]});
     
-    contract.getPastEvents('VoterRegistered', options)
-        .then(results => console.log(results))
-        .catch(err => "throw err");
+    let optionEve = {
+      filter: {
+          value: [],
+      },
+      fromBlock: 0
+  };
+    contract.events.VoterRegistered(optionEve)
+      .on('data', event => console.log(event))
+      .on('changed', changed => console.log(changed))
+      .on('connected', str => console.log(str));
     
   };
 
@@ -143,6 +164,7 @@ function App() {
   };  
 
   async function startProposalsRegistering(){
+    startProposalDiv.current.style.backgroundColor = "grey";
     await contract.methods.startProposalsRegistering().send({from: addresses[0]});
     contract.getPastEvents('WorkflowStatusChange', options)
         .then(results => console.log(results))
@@ -150,6 +172,7 @@ function App() {
   }
 
   async function endProposalsRegistering(){
+    endProposalsRegisteringDiv.current.style.backgroundColor = "grey";
     await contract.methods.endProposalsRegistering().send({from: addresses[0]});
     contract.getPastEvents('WorkflowStatusChange', options)
         .then(results => console.log(results))
@@ -157,6 +180,7 @@ function App() {
   }
 
   async function addProposal () {
+    addProposalDiv.current.style.backgroundColor = "grey";
     if (inputValueProposal === "") {
       alert("Please enter a value to write.");
       return;
@@ -168,6 +192,7 @@ function App() {
   };
 
   async function startVotingSession () {
+    startVotingSessionDiv.current.style.backgroundColor = "grey";
     await contract.methods.startVotingSession().send({from: addresses[0]});
     contract.getPastEvents('WorkflowStatusChange', options)
         .then(results => console.log(results))
@@ -175,13 +200,15 @@ function App() {
   };
   
   async function setVote () {
+    setVoteDiv.current.style.backgroundColor = "grey";
     await contract.methods.setVote(inputValueVote).send({from: addresses[0]});
     contract.getPastEvents('WorkflowStatusChange', options)
         .then(results => console.log(results))
         .catch(err => "throw err");
-  };  
+  };
 
   async function endVotingSession () {
+    endVotingSessionDiv.current.style.backgroundColor = "grey";
     await contract.methods.endVotingSession().send({from: addresses[0]});
     contract.getPastEvents('WorkflowStatusChange', options)
         .then(results => console.log(results))
@@ -189,23 +216,31 @@ function App() {
   };
 
   async function tallyVotes () {
+    tallyVotesDiv.current.style.backgroundColor = "grey";
     await contract.methods.tallyVotes().send({from: addresses[0]});
-    contract.getPastEvents('WorkflowStatusChange', options)
-        .then(results => console.log(results))
-        .catch(err => "throw err");
+
   };
 
   async function resultFunc () {
-    console.log("resultFunc");
-    await contract.methods.winningProposalID().call(function(err, res){
-      document.getElementById('amt').innerText = "La valeur gagnante est : ".res;
-      console.log(res);
-    });
+    const uintRes = await contract.methods.winningProposalID().call();
+    console.log(uintRes);
+    // const propWin = await contract.methods.getOneProposal(uintRes).call({from: addresses[0]});
+    // console.log(propWin);
+    const sentenceVal = "La proposition gagnante est la numéro : "  + uintRes;
+    console.log(sentenceVal);
+    amt.current.innerText = sentenceVal;
   };
+  
   
   // listen for account changes
 	window.ethereum.on('accountsChanged', accountChangedHandler);
 	window.ethereum.on('chainChanged', chainChangedHandler);
+
+  window.ethereum.request({ method: 'eth_requestAccounts'})
+    .then(result => {
+      accountChangedHandler(result[0]);
+      getAccountBalance(result[0]);
+    });
 
   if(!web3) {
     
@@ -240,7 +275,7 @@ function App() {
       </div>
       
       {/* {isOwner ? ( */}
-      <div className="App-header whitelist">
+      <div className="App-header whitelist" ref={whitelistDiv}>
         <h1>Ajouter une addresse à la liste blanche</h1>        
         <div className="whitelist-div">
 
@@ -257,7 +292,7 @@ function App() {
       <br></br>      <hr></hr>      <br></br>
 
       {/* {isOwner ? ( */}
-      <div className="App-header StartProposal">
+      <div className="App-header startProposal" ref={startProposalDiv}>
         <h1>Commencer la session d'enregistrement des propositions</h1>        
         <div className="whitelist-div">
 
@@ -269,7 +304,7 @@ function App() {
 
       <br></br>      <hr></hr>      <br></br>
 
-      <div className="App-header addProposal">
+      <div className="App-header addProposal" ref={addProposalDiv}>
         <h1>Ajouter une proposition</h1>        
         <div className="addProposal-div">
 
@@ -285,7 +320,7 @@ function App() {
       <br></br>      <hr></hr>      <br></br>
 
       {/* {isOwner ? ( */}
-      <div className="App-header endProposalsRegistering">
+      <div className="App-header endProposalsRegistering" ref={endProposalsRegisteringDiv}>
         <h1>Fin de la session d'enregistrement des propositions</h1>        
         <div className="endProposalsRegistering-div">
 
@@ -298,7 +333,7 @@ function App() {
       <br></br>      <hr></hr>      <br></br>
 
       {/* {isOwner ? ( */}
-      <div className="App-header startVotingSession">
+      <div className="App-header startVotingSession" ref={startVotingSessionDiv}>
         <h1>Commencer la session de vote</h1>        
         <div className="startVotingSession-div">
 
@@ -310,8 +345,8 @@ function App() {
 
       <br></br>      <hr></hr>      <br></br>
 
-      <div className="App-header setVote">
-        <h1>Voter pour les propositions </h1>        
+      <div className="App-header setVote" ref={setVoteDiv}>
+        <h1>Voter pour la proposition numéro </h1>        
         <div className="setVote-div">
         <input
             type="text"
@@ -325,7 +360,7 @@ function App() {
       <br></br>      <hr></hr>      <br></br>
 
       {/* {isOwner ? ( */}
-      <div className="App-header endVotingSession">
+      <div className="App-header endVotingSession" ref={endVotingSessionDiv}>
         <h1>Finir la session de vote</h1>        
         <div className="endVotingSession-div">
 
@@ -338,7 +373,7 @@ function App() {
       <br></br>      <hr></hr>      <br></br>
 
       {/* {isOwner ? ( */}
-      <div className="App-header tallyVotes">
+      <div className="App-header tallyVotes" ref={tallyVotesDiv}>
         <h1>Comptabiliser les votes</h1>        
         <div className="tallyVotes-div">
 
@@ -356,9 +391,11 @@ function App() {
           <button onClick={resultFunc}>  Valider  </button>          
         </div>
         
-        <div id="amt">
-
+        <div>
+          <span ref={amt}></span> 
         </div>
+
+        <br></br>
       </div>
     
     </div>
