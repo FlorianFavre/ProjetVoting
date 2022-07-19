@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/ProjetVoting/static/css/main.09a58548.chunk.css",
-    "main.js": "/ProjetVoting/static/js/main.4b00dfe7.chunk.js",
-    "main.js.map": "/ProjetVoting/static/js/main.4b00dfe7.chunk.js.map",
+    "main.css": "/ProjetVoting/static/css/main.4c7863a0.chunk.css",
+    "main.js": "/ProjetVoting/static/js/main.2acc06dc.chunk.js",
+    "main.js.map": "/ProjetVoting/static/js/main.2acc06dc.chunk.js.map",
     "runtime-main.js": "/ProjetVoting/static/js/runtime-main.2bcedb09.js",
     "runtime-main.js.map": "/ProjetVoting/static/js/runtime-main.2bcedb09.js.map",
-    "static/js/2.f3bd030d.chunk.js": "/ProjetVoting/static/js/2.f3bd030d.chunk.js",
-    "static/js/2.f3bd030d.chunk.js.map": "/ProjetVoting/static/js/2.f3bd030d.chunk.js.map",
+    "static/js/2.9b2a25c6.chunk.js": "/ProjetVoting/static/js/2.9b2a25c6.chunk.js",
+    "static/js/2.9b2a25c6.chunk.js.map": "/ProjetVoting/static/js/2.9b2a25c6.chunk.js.map",
     "index.html": "/ProjetVoting/index.html",
-    "static/css/main.09a58548.chunk.css.map": "/ProjetVoting/static/css/main.09a58548.chunk.css.map",
-    "static/js/2.f3bd030d.chunk.js.LICENSE.txt": "/ProjetVoting/static/js/2.f3bd030d.chunk.js.LICENSE.txt"
+    "static/css/main.4c7863a0.chunk.css.map": "/ProjetVoting/static/css/main.4c7863a0.chunk.css.map",
+    "static/js/2.9b2a25c6.chunk.js.LICENSE.txt": "/ProjetVoting/static/js/2.9b2a25c6.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.2bcedb09.js",
-    "static/js/2.f3bd030d.chunk.js",
-    "static/css/main.09a58548.chunk.css",
-    "static/js/main.4b00dfe7.chunk.js"
+    "static/js/2.9b2a25c6.chunk.js",
+    "static/css/main.4c7863a0.chunk.css",
+    "static/js/main.2acc06dc.chunk.js"
   ]
 }
