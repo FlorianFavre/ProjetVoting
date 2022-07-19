@@ -1,40 +1,119 @@
-# React Truffle Box
+# dApp de Vote 
+## Système de vote
 
-This box comes with everything you need to start using Truffle to write, compile, test, and deploy smart contracts, and interact with them from a React app.
+L'utilisation de React avec Node et truffle nous permet de construire une dApp qui interagit avec Metamask, que ce soit sur le réseau de test Ropsten ou en localhost avec Ganache.
 
-## Installation
+Lien de la vidéo de démonstration
+https://www.loom.com/share/916a44700ef74207be87fa68207f389e
 
-First ensure you are in an empty directory.
+Le projet est scindé en deux dossiers principaux
 
-Run the `unbox` command using 1 of 2 ways.
+- client
+- truffle
 
-```sh
-# Install Truffle globally and run `truffle unbox`
-$ npm install -g truffle
-$ truffle unbox react
+# Le dossier truffle
+
+Il contient principalement le contract, ici *Voting.sol* dans le dossier **contracts** et dans le dossier **migrations**
+```js
+const Voting = artifacts.require("Voting");
+module.exports = function (deployer) {
+  deployer.deploy(Voting);
+};
+```
+le code nécessaire à son déploiement.
+
+# Le dossier client est plus intéressant
+
+Dans le dossier **public** j'ai changé le titre de l'application. On peut aussi y changer son logo.
+
+Le fichier package.json a demandé des modifications pour déployer sur Github Pages. Voici le lien pour voir l'application ainsi déployé :
+https://florianfavre.github.io/ProjetVoting/
+
+Le code est situé dans le fichier App.js
+
+```js
+import React, { useState, useEffect, useRef } from "react";
+import Voting from "./contracts/Voting.json";
+import getWeb3 from "./getWeb3.js";
+import "./App.css";
+import {ethers} from 'ethers';
+```
+Les imports permettent d'utiliser les différentes propriétés de React, les propriétés du contract Voting.sol à travers ici son json déployé.
+
+```js
+const [connButtonText, setConnButtonText] = useState('Connect Wallet');
+const amt = useRef(null);
+```
+Voici deux exemples de variables de la fonction App, une en useState et l'autre en useRef.
+
+```js
+useEffect(() => {
+    fetchData();
+    ... }
 ```
 
-```sh
-# Alternatively, run `truffle unbox` via npx
-$ npx truffle unbox react
+useEffect sert à initialiser la connexion avec la fonction asynchrone fetchData.
+
+
+Regardons une fonction plus en détail
+```js
+async function addWhitelist () {
+    whitelistDiv.current.style.backgroundColor = "grey";
+    if (inputValue === "") {
+      alert("Please enter a value to write.");
+      return;
+    }
+    console.log(inputValue);
+    await contract.methods.addVoter(inputValue).send({from: addresses[0]});
+    let optionEve = {
+      filter: {
+          value: [],
+      },
+      fromBlock: 0
+  };
+    contract.events.VoterRegistered(optionEve)
+      .on('data', event => console.log(event))
+      .on('changed', changed => console.log(changed))
+      .on('connected', str => console.log(str));
+  };
+  ```
+  
+  Lorsque cette fonction est appellé elle commence par changer le fond du div concerné pour notifier à l'utilisateur que l'on a déja interagit avec cette zone. A terme on pourrait même cacher certaines zones selon notre volonté.
+  
+  Ensuite on teste si la valeur rentrer dans l'input n'est pas nulle. Voici la partie html de cet input :
+```html
+  <div className="App-header whitelist" ref={whitelistDiv}>
+        <h1>Ajouter une addresse à la liste blanche</h1>
+        <div className="whitelist-div">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={ (e) => handleInputChange(e) } />
+          <button onClick={addWhitelist}>  Ajouter  </button>
+        </div>
+      </div>
+```
+Elle fait appel à cette fonction qui permet de mettre à jour inputValue lorsque l'utilisateur écrit
+```js
+async function handleInputChange(e) {
+    setInputValue(e.target.value);
+  };
 ```
 
-Start the react dev server.
+Revenons à addWhitelist qui ensuite fait appel à la fonction du contrat addVoter en lui donnant en paramètre la valeur de cet input.
 
-```sh
-$ cd client
-$ npm start
-  Starting the development server...
-```
+Nous avons pour finir un event **VoterRegistered** qui permet de voir dans la console que le votant a été correctement enregistré sur la blockchain une fois que la transaction a été validé sur Metamask.
 
-From there, follow the instructions on the hosted React app. It will walk you through using Truffle and Ganache to deploy the `SimpleStorage` contract, making calls to it, and sending transactions to change the contract's state.
 
-## FAQ
+# Gestion d'events avec getPastEvents
 
-- __How do I use this with Ganache (or any other network)?__
-
-  The Truffle project is set to deploy to Ganache by default. If you'd like to change this, it's as easy as modifying the Truffle config file! Check out [our documentation on adding network configurations](https://trufflesuite.com/docs/truffle/reference/configuration/#networks). From there, you can run `truffle migrate` pointed to another network, restart the React dev server, and see the change take place.
-
-- __Where can I find more resources?__
-
-  This Box is a sweet combo of [Truffle](https://trufflesuite.com) and [Create React App](https://create-react-app.dev). Either one would be a great place to start!
+Dans cet exemple de fonction nous voyons une autre utilisation de la gestion d'évènement.
+```js
+async function startVotingSession () {
+    startVotingSessionDiv.current.style.backgroundColor = "grey";
+    await contract.methods.startVotingSession().send({from: addresses[0]});
+    contract.getPastEvents('WorkflowStatusChange', options)
+        .then(results => console.log(results))
+        .catch(err => "throw err");
+  };
+  ```
